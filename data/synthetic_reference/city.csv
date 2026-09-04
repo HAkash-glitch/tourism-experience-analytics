@@ -1,0 +1,48 @@
+CityId,CityName,CountryId
+1,Mumbai,1
+2,Delhi,1
+3,Jaipur,1
+4,Goa,1
+5,Colombo,2
+6,Kandy,2
+7,Kathmandu,3
+8,Bali,4
+9,Yogyakarta,4
+10,Jakarta,4
+11,Bangkok,5
+12,Phuket,5
+13,Hanoi,6
+14,Da Nang,6
+15,Tokyo,7
+16,Kyoto,7
+17,Seoul,8
+18,Paris,9
+19,Nice,9
+20,Berlin,10
+21,Munich,10
+22,Amsterdam,11
+23,Warsaw,12
+24,Bucharest,13
+25,Rome,14
+26,Venice,14
+27,Barcelona,15
+28,Madrid,15
+29,Athens,16
+30,Santorini,16
+31,New York,17
+32,Los Angeles,17
+33,Orlando,17
+34,Toronto,18
+35,Vancouver,18
+36,Cancun,19
+37,San Jose,20
+38,Nairobi,21
+39,Zanzibar,22
+40,Lagos,23
+41,Accra,24
+42,Cairo,25
+43,Marrakech,26
+44,Sydney,27
+45,Melbourne,27
+46,Auckland,28
+47,Suva,29

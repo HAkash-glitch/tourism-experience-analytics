@@ -1,0 +1,14 @@
+RegionId,Region,ContinentId
+1,South Asia,1
+2,Southeast Asia,1
+3,East Asia,1
+4,Western Europe,2
+5,Eastern Europe,2
+6,Southern Europe,2
+7,Northern America,3
+8,Central America,3
+9,East Africa,4
+10,West Africa,4
+11,North Africa,4
+12,Australia & NZ,5
+13,Pacific Islands,5

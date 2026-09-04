@@ -1,0 +1,166 @@
+CountryId,Country,RegionId
+0,-,0
+1,Cameroon,1
+2,Chad,1
+3,Rwanda,1
+4,Ethiopia,2
+5,Kenya,2
+6,Mauritius,2
+7,Seychelles,2
+8,Sudan,2
+9,Tanzania,2
+10,Uganda,2
+11,Zambia,2
+12,Zimbabwe,2
+13,Algeria,3
+14,Egypt,3
+15,Morocco,3
+16,Tunisia,3
+17,Angola,4
+18,Botswana,4
+19,Malawi,4
+20,Mozambique,4
+21,Namibia,4
+22,South Africa,4
+23,Burkina Faso,5
+24,Cape Verde,5
+25,Côte d'Ivoire,5
+26,Ghana,5
+27,NIGERIA,5
+28,Senegal,5
+29,Antigua and Barbuda,6
+30,Bahamas,6
+31,Barbados,6
+32,Cayman Island,6
+33,Cuba,6
+34,Curacao,6
+35,Dominican Republic,6
+36,Grand Cayman,6
+37,Jamaica,6
+38,Puerto Rico,6
+39,St Martin / St Maarten,6
+40,Trinidad and Tobago,6
+41,Turks and Caicos Islands,6
+42,Belize,7
+43,Costa Rica,7
+44,Guatemala,7
+45,Honduras,7
+46,Nicaragua,7
+47,Panama,7
+48,Canada,8
+49,Greenland,8
+50,Mexico,8
+51,United States,8
+52,Argentina,9
+53,Bolivia,9
+54,Brazil,9
+55,Chile,9
+56,Colombia,9
+57,Ecuador,9
+58,Peru,9
+59,Suriname,9
+60,Uruguay,9
+61,Venezuela,9
+62,Asia,0
+63,Armenia,10
+64,Kazakhstan,10
+65,Kyrgyzstan,10
+66,Mongolia,10
+67,Turkmenistan,10
+68,Uzbekistan,10
+69,China,11
+70,Hong Kong,11
+71,Japan,11
+72,North Korea,11
+73,South Korea,11
+74,Taiwan,11
+75,Bahrain,12
+76,Cyprus,12
+77,Iran,12
+78,Iraq,12
+79,Israel,12
+80,Jordan,12
+81,Kuwait,12
+82,Lebanon,12
+83,Libya,12
+84,Oman,12
+85,Palestine,12
+86,Qatar,12
+87,Saudi Arabia,12
+88,Turkey,12
+89,United Arab Emirates,12
+90,Afghanistan,13
+91,Bangladesh,13
+92,Bhutan,13
+93,India,13
+94,Maldives,13
+95,Nepal,13
+96,Pakistan,13
+97,Sri Lanka,13
+98,Brunei Darussalam,14
+99,Cambodia,14
+100,East Timor,14
+101,Indonesia,14
+102,Laos,14
+103,Malaysia,14
+104,Myanmar,14
+105,Philippines,14
+106,Singapore,14
+107,Thailand,14
+108,Vietnam,14
+109,Australia,15
+110,Fiji,16
+111,French Polynesia,16
+112,Mariana Islands,16
+113,Marshall Islands,16
+114,New Caledonia,16
+115,New Zealand,16
+116,Papua New Guinea,16
+117,Solomon Islands,16
+118,Tonga,16
+119,Vanuatu,16
+120,Europe,0
+121,Austria,17
+122,Croatia,17
+123,Czech Republic,17
+124,Estonia,17
+125,Germany,17
+126,Hungary,17
+127,Latvia,17
+128,Lithuania,17
+129,Luxembourg,17
+130,Poland,17
+131,Romania,17
+132,Serbia,17
+133,Slovakia,17
+134,Slovenia,17
+135,Switzerland,17
+136,Azerbaijan,18
+137,Belarus,18
+138,Georgia,18
+139,Russia,18
+140,Ukraine,18
+141,Denmark,19
+142,Finland,19
+143,Iceland,19
+144,Norway,19
+145,Sweden,19
+146,Albania,20
+147,Bosnia and Herzegovina,20
+148,Bulgaria,20
+149,Cyprus,20
+150,Greece,20
+151,Italy,20
+152,Malta,20
+153,Moldova,20
+154,Montenegro,20
+155,Portugal,20
+156,Republic of North Macedonia,20
+157,Spain,20
+158,Belgium,21
+159,France,21
+160,Ireland,21
+161,Monaco,21
+162,Netherlands,21
+163,United Kingdom,21
+164,Yemen,12
