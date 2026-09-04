@@ -36,23 +36,20 @@ MODELS = ROOT / "models"
 
 st.set_page_config(
     page_title="Waypoint — Tourism Analytics",
-    layout="wide",
     page_icon="🧭",
+    layout="wide",
 )
 
 
 # ==============================================================
-# CSS
+# CUSTOM CSS
 # ==============================================================
 
 st.markdown(
     """
     <style>
 
-    @import url(
-        'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700'
-        '&family=Inter:wght@400;500;600&display=swap'
-    );
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
 
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
@@ -64,7 +61,7 @@ st.markdown(
 
     .waypoint-hero {
         background: linear-gradient(120deg, #0E3B43 0%, #14545F 100%);
-        border-radius: 4px;
+        border-radius: 8px;
         padding: 2.6rem 2.8rem;
         margin-bottom: 1.6rem;
         color: #FBF8F3;
@@ -74,16 +71,17 @@ st.markdown(
         font-family: 'Fraunces', serif;
         font-weight: 600;
         font-size: 2.6rem;
-        margin: 0 0 0.4rem 0;
+        margin: 0 0 0.5rem 0;
         color: #FBF8F3;
+        letter-spacing: -0.01em;
     }
 
     .waypoint-hero p {
         font-size: 1.02rem;
         color: #CFE3E1;
-        max-width: 640px;
+        max-width: 760px;
         margin: 0;
-        line-height: 1.5;
+        line-height: 1.6;
     }
 
     .waypoint-hero .accent {
@@ -100,7 +98,7 @@ st.markdown(
         background: #FFFFFF;
         border: 1px solid #E8E1D3;
         border-left: 3px solid #E4572E;
-        border-radius: 3px;
+        border-radius: 5px;
         padding: 0.9rem 1.1rem;
     }
 
@@ -136,7 +134,7 @@ st.markdown(
         background-color: #E4572E;
         color: #FFFFFF;
         border: none;
-        border-radius: 3px;
+        border-radius: 5px;
         font-weight: 500;
         padding: 0.5rem 1.3rem;
     }
@@ -157,7 +155,7 @@ st.markdown(
 
 
 # ==============================================================
-# DATA LOADING
+# LOAD DATA
 # ==============================================================
 
 @st.cache_data(show_spinner=False)
@@ -167,14 +165,7 @@ def load_data():
 
     if not data_path.exists():
         raise FileNotFoundError(
-            f"""
-            Required file was not found:
-
-            {data_path}
-
-            Make sure data/processed/model_features.csv
-            exists in your GitHub repository.
-            """
+            f"Required file not found:\n{data_path}"
         )
 
     df = pd.read_csv(data_path)
@@ -193,21 +184,17 @@ def load_data():
         "Rating",
     ]
 
-    missing = [
-        column
-        for column in required_columns
-        if column not in df.columns
+    missing_columns = [
+        col for col in required_columns
+        if col not in df.columns
     ]
 
-    if missing:
+    if missing_columns:
         raise ValueError(
-            f"Missing required columns in model_features.csv: {missing}"
+            f"Missing columns in model_features.csv: {missing_columns}"
         )
 
-    # ----------------------------------------------------------
-    # Numeric conversion
-    # ----------------------------------------------------------
-
+    # Numeric columns
     numeric_columns = [
         "AttractionId",
         "VisitYear",
@@ -215,10 +202,9 @@ def load_data():
         "Rating",
     ]
 
-    for column in numeric_columns:
-
-        df[column] = pd.to_numeric(
-            df[column],
+    for col in numeric_columns:
+        df[col] = pd.to_numeric(
+            df[col],
             errors="coerce"
         )
 
@@ -271,53 +257,43 @@ def load_data():
             df["UserAvgRating"] = df["Rating"].median()
 
     # ----------------------------------------------------------
-    # Fill missing numeric values
+    # Fill missing numerical values
     # ----------------------------------------------------------
 
-    stats_columns = [
+    stat_columns = [
         "AttractionAvgRating",
         "AttractionVisitCount",
         "UserVisitCount",
         "UserAvgRating",
     ]
 
-    for column in stats_columns:
+    for col in stat_columns:
 
-        df[column] = pd.to_numeric(
-            df[column],
+        df[col] = pd.to_numeric(
+            df[col],
             errors="coerce"
         )
 
-        median_value = df[column].median()
+        median_value = df[col].median()
 
         if pd.isna(median_value):
             median_value = 0
 
-        df[column] = df[column].fillna(median_value)
+        df[col] = df[col].fillna(
+            median_value
+        )
 
     rating_median = df["Rating"].median()
 
     if pd.isna(rating_median):
         rating_median = 3.0
 
-    df["Rating"] = df["Rating"].fillna(rating_median)
-
-    # ----------------------------------------------------------
-    # Remove invalid rows
-    # ----------------------------------------------------------
-
-    df = df.dropna(
-        subset=[
-            "Attraction",
-            "AttractionId",
-            "VisitMode",
-        ]
+    df["Rating"] = df["Rating"].fillna(
+        rating_median
     )
 
-    df = df.reset_index(drop=True)
-
     # ----------------------------------------------------------
-    # Convert categorical columns to string
+    # Categorical columns
     # ----------------------------------------------------------
 
     categorical_columns = [
@@ -330,13 +306,23 @@ def load_data():
         "VisitMode",
     ]
 
-    for column in categorical_columns:
+    for col in categorical_columns:
 
-        df[column] = (
-            df[column]
+        df[col] = (
+            df[col]
             .fillna("Unknown")
             .astype(str)
         )
+
+    df = df.dropna(
+        subset=[
+            "Attraction",
+            "AttractionId",
+            "VisitMode",
+        ]
+    )
+
+    df = df.reset_index(drop=True)
 
     return df
 
@@ -363,41 +349,19 @@ def build_encoders(df):
 
         encoder = LabelEncoder()
 
-        values = (
+        encoder.fit(
             df[column]
             .fillna("Unknown")
             .astype(str)
         )
-
-        encoder.fit(values)
 
         encoders[column] = encoder
 
     return encoders
 
 
-def add_encoded_columns(df, encoders):
-
-    result = df.copy()
-
-    for column in ENCODER_COLUMNS:
-
-        values = (
-            result[column]
-            .fillna("Unknown")
-            .astype(str)
-        )
-
-        result[f"{column}_enc"] = (
-            encoders[column]
-            .transform(values)
-        )
-
-    return result
-
-
 # ==============================================================
-# FEATURES
+# FEATURE DEFINITIONS
 # ==============================================================
 
 REGRESSION_FEATURES = [
@@ -431,7 +395,7 @@ CLASSIFICATION_FEATURES = [
 
 
 # ==============================================================
-# SAFE JOBLIB LOADER
+# SAFE MODEL LOADING
 # ==============================================================
 
 def safe_load(path):
@@ -449,39 +413,48 @@ def safe_load(path):
 
 
 # ==============================================================
-# FALLBACK MODEL TRAINING
+# FALLBACK TRAINING
 # ==============================================================
 
 def train_fallback_models(df):
 
     encoders = build_encoders(df)
 
-    encoded_df = add_encoded_columns(
-        df,
-        encoders
-    )
+    work_df = df.copy()
+
+    # Create encoded columns
+    for column in ENCODER_COLUMNS:
+
+        work_df[f"{column}_enc"] = (
+            encoders[column]
+            .transform(
+                work_df[column]
+                .fillna("Unknown")
+                .astype(str)
+            )
+        )
 
     # ----------------------------------------------------------
     # Regression
     # ----------------------------------------------------------
 
     X_reg = (
-        encoded_df[REGRESSION_FEATURES]
+        work_df[REGRESSION_FEATURES]
         .apply(pd.to_numeric, errors="coerce")
         .fillna(0)
     )
 
     y_reg = (
         pd.to_numeric(
-            encoded_df["Rating"],
+            work_df["Rating"],
             errors="coerce"
         )
         .fillna(
-            encoded_df["Rating"].median()
+            work_df["Rating"].median()
         )
     )
 
-    regression_model = RandomForestRegressor(
+    reg_model = RandomForestRegressor(
         n_estimators=120,
         max_depth=12,
         min_samples_leaf=2,
@@ -489,7 +462,7 @@ def train_fallback_models(df):
         n_jobs=-1,
     )
 
-    regression_model.fit(
+    reg_model.fit(
         X_reg,
         y_reg
     )
@@ -498,19 +471,28 @@ def train_fallback_models(df):
     # Classification
     # ----------------------------------------------------------
 
-    classification_encoder = LabelEncoder()
+    visit_mode_encoder = LabelEncoder()
 
-    y_clf = classification_encoder.fit_transform(
-        encoded_df["VisitMode"].astype(str)
+    y_clf = visit_mode_encoder.fit_transform(
+        work_df["VisitMode"].astype(str)
+    )
+
+    encoders["VisitMode"] = visit_mode_encoder
+
+    # Re-create encoded VisitMode
+    work_df["VisitMode_enc"] = (
+        visit_mode_encoder.transform(
+            work_df["VisitMode"].astype(str)
+        )
     )
 
     X_clf = (
-        encoded_df[CLASSIFICATION_FEATURES]
+        work_df[CLASSIFICATION_FEATURES]
         .apply(pd.to_numeric, errors="coerce")
         .fillna(0)
     )
 
-    classification_model = RandomForestClassifier(
+    clf_model = RandomForestClassifier(
         n_estimators=120,
         max_depth=14,
         min_samples_leaf=2,
@@ -519,50 +501,32 @@ def train_fallback_models(df):
         n_jobs=-1,
     )
 
-    classification_model.fit(
+    clf_model.fit(
         X_clf,
         y_clf
     )
 
-    # Important:
-    # The VisitMode encoder must match classifier labels.
-    encoders["VisitMode"] = classification_encoder
-
     return (
         encoders,
-        regression_model,
+        reg_model,
         REGRESSION_FEATURES,
-        classification_model,
+        clf_model,
         CLASSIFICATION_FEATURES,
     )
 
 
 # ==============================================================
-# ARTIFACT LOADING
+# LOAD MODELS
 # ==============================================================
 
 @st.cache_resource(show_spinner=False)
 def load_artifacts(df):
 
-    using_fallback = False
-
-    # ----------------------------------------------------------
-    # Label encoders
-    # ----------------------------------------------------------
+    fallback_used = False
 
     encoders = safe_load(
         MODELS / "label_encoders.joblib"
     )
-
-    if not isinstance(encoders, dict):
-
-        encoders = build_encoders(df)
-
-        using_fallback = True
-
-    # ----------------------------------------------------------
-    # Regression model
-    # ----------------------------------------------------------
 
     reg_model = safe_load(
         MODELS / "regression_model.joblib"
@@ -571,10 +535,6 @@ def load_artifacts(df):
     reg_features = safe_load(
         MODELS / "regression_features.joblib"
     )
-
-    # ----------------------------------------------------------
-    # Classification model
-    # ----------------------------------------------------------
 
     clf_model = safe_load(
         MODELS / "classification_model.joblib"
@@ -585,12 +545,16 @@ def load_artifacts(df):
     )
 
     # ----------------------------------------------------------
-    # Broken/missing artifacts
+    # If regression/classification model cannot be loaded,
+    # train safe fallback models.
     # ----------------------------------------------------------
 
-    if reg_model is None or clf_model is None:
+    if (
+        reg_model is None
+        or clf_model is None
+    ):
 
-        using_fallback = True
+        fallback_used = True
 
         (
             encoders,
@@ -603,22 +567,30 @@ def load_artifacts(df):
     else:
 
         if not isinstance(
+            encoders,
+            dict
+        ):
+            encoders = build_encoders(df)
+
+        if not isinstance(
             reg_features,
             (list, tuple, np.ndarray)
         ):
             reg_features = REGRESSION_FEATURES
-
         else:
-            reg_features = list(reg_features)
+            reg_features = list(
+                reg_features
+            )
 
         if not isinstance(
             clf_features,
             (list, tuple, np.ndarray)
         ):
             clf_features = CLASSIFICATION_FEATURES
-
         else:
-            clf_features = list(clf_features)
+            clf_features = list(
+                clf_features
+            )
 
     return (
         encoders,
@@ -626,12 +598,12 @@ def load_artifacts(df):
         reg_features,
         clf_model,
         clf_features,
-        using_fallback,
+        fallback_used,
     )
 
 
 # ==============================================================
-# CONTENT RECOMMENDER
+# RECOMMENDER
 # ==============================================================
 
 @st.cache_resource(show_spinner=False)
@@ -652,10 +624,6 @@ def build_recommender(df):
         .reset_index(drop=True)
     )
 
-    # ----------------------------------------------------------
-    # Statistics
-    # ----------------------------------------------------------
-
     stats = (
         df.groupby("AttractionId")
         .agg(
@@ -673,7 +641,9 @@ def build_recommender(df):
 
     items["AvgRating"] = (
         items["AvgRating"]
-        .fillna(df["Rating"].median())
+        .fillna(
+            df["Rating"].median()
+        )
     )
 
     items["VisitCount"] = (
@@ -681,11 +651,7 @@ def build_recommender(df):
         .fillna(0)
     )
 
-    # ----------------------------------------------------------
-    # Content matrix
-    # ----------------------------------------------------------
-
-    content_matrix = pd.get_dummies(
+    content = pd.get_dummies(
         items[
             [
                 "AttractionType",
@@ -698,30 +664,27 @@ def build_recommender(df):
 
     if len(items) == 0:
 
-        similarity_matrix = np.empty(
+        similarity = np.empty(
             (0, 0)
         )
 
-    elif content_matrix.shape[1] == 0:
+    elif content.shape[1] == 0:
 
-        similarity_matrix = np.eye(
+        similarity = np.eye(
             len(items)
         )
 
     else:
 
-        similarity_matrix = cosine_similarity(
-            content_matrix
+        similarity = cosine_similarity(
+            content
         )
 
-    return (
-        items,
-        similarity_matrix,
-    )
+    return items, similarity
 
 
 # ==============================================================
-# LOAD DATA / MODELS
+# LOAD EVERYTHING
 # ==============================================================
 
 try:
@@ -734,7 +697,7 @@ try:
         reg_features,
         clf_model,
         clf_features,
-        using_fallback,
+        fallback_used,
     ) = load_artifacts(df)
 
     (
@@ -756,17 +719,15 @@ except Exception as error:
 
 
 # ==============================================================
-# INFORMATION
+# FALLBACK NOTICE
 # ==============================================================
 
-if using_fallback:
+if fallback_used:
 
     st.warning(
-        """
-        Some saved model files could not be loaded with the current
-        Streamlit environment. The app automatically trained fallback
-        models from the processed dataset, so the application can still run.
-        """
+        "A saved model could not be loaded with the current "
+        "environment, so the app is using an automatically "
+        "trained fallback model."
     )
 
 
@@ -784,10 +745,15 @@ POPULAR_ATTRACTIONS = (
         ],
         dropna=False,
     )["Rating"]
-    .agg(["mean", "count"])
+    .agg(
+        ["mean", "count"]
+    )
     .reset_index()
     .sort_values(
-        ["count", "mean"],
+        [
+            "count",
+            "mean",
+        ],
         ascending=False,
     )
 )
@@ -800,7 +766,6 @@ POPULAR_ATTRACTIONS = (
 st.markdown(
     """
     <div class="waypoint-hero">
-
         <h1>
             Waypoint
             <span class="accent">·</span>
@@ -815,7 +780,6 @@ st.markdown(
             rating forecasts, travel-mode predictions,
             and attraction recommendations.
         </p>
-
     </div>
     """,
     unsafe_allow_html=True,
@@ -823,7 +787,7 @@ st.markdown(
 
 
 # ==============================================================
-# INFO
+# INFORMATION
 # ==============================================================
 
 st.info(
@@ -895,7 +859,7 @@ with tab_overview:
         f"{len(df):,}",
     )
 
-    # Rating
+    # Average rating
 
     c4.metric(
         "Avg Rating",
@@ -945,7 +909,9 @@ with tab_overview:
     )
 
     top_types = (
-        df.groupby("AttractionType")["Rating"]
+        df.groupby(
+            "AttractionType"
+        )["Rating"]
         .mean()
         .sort_values(
             ascending=False
@@ -964,7 +930,7 @@ with tab_overview:
         "Most visited attractions"
     )
 
-    display_popular = (
+    popular_display = (
         POPULAR_ATTRACTIONS
         .head(10)
         .rename(
@@ -976,35 +942,32 @@ with tab_overview:
     )
 
     st.dataframe(
-        display_popular,
+        popular_display,
         use_container_width=True,
         hide_index=True,
     )
 
 
 # ==============================================================
-# REGRESSION
+# SAFE ENCODING
 # ==============================================================
 
 def safe_encode(
-    encoder_dict,
+    encoders,
     column,
     value,
 ):
 
-    encoder = encoder_dict[column]
+    encoder = encoders[column]
 
     value = str(value)
 
     known_values = set(
-        map(
-            str,
-            encoder.classes_,
-        )
+        str(x)
+        for x in encoder.classes_
     )
 
     if value not in known_values:
-
         return 0
 
     return int(
@@ -1013,6 +976,10 @@ def safe_encode(
         )[0]
     )
 
+
+# ==============================================================
+# REGRESSION INPUT
+# ==============================================================
 
 def make_regression_input(
     attr_row,
@@ -1097,6 +1064,10 @@ def make_regression_input(
     )
 
 
+# ==============================================================
+# REGRESSION TAB
+# ==============================================================
+
 with tab_predict:
 
     st.subheader(
@@ -1107,9 +1078,9 @@ with tab_predict:
         "Choose an attraction and trip details to estimate the expected rating."
     )
 
-    col_a, col_b = st.columns(2)
+    colA, colB = st.columns(2)
 
-    with col_a:
+    with colA:
 
         attraction_name = st.selectbox(
             "Attraction",
@@ -1123,8 +1094,7 @@ with tab_predict:
 
         attr_row = (
             df[
-                df["Attraction"]
-                .astype(str)
+                df["Attraction"].astype(str)
                 == attraction_name
             ]
             .iloc[0]
@@ -1140,28 +1110,28 @@ with tab_predict:
             key="pred_mode",
         )
 
-    with col_b:
+    with colB:
 
-        year_min = int(
+        min_year = int(
             df["VisitYear"].min()
         )
 
-        year_max = int(
+        max_year = int(
             df["VisitYear"].max()
         )
 
         default_year = min(
             max(
                 2022,
-                year_min,
+                min_year,
             ),
-            year_max,
+            max_year,
         )
 
         year = st.slider(
             "Visit Year",
-            year_min,
-            year_max,
+            min_year,
+            max_year,
             default_year,
             key="pred_year",
         )
@@ -1193,12 +1163,10 @@ with tab_predict:
                 fill_value=0,
             )
 
-            prediction = (
-                float(
-                    np.asarray(
-                        reg_model.predict(X)
-                    )[0]
-                )
+            prediction = float(
+                np.asarray(
+                    reg_model.predict(X)
+                )[0]
             )
 
             prediction = float(
@@ -1228,7 +1196,7 @@ with tab_predict:
 
 
 # ==============================================================
-# CLASSIFICATION
+# CLASSIFICATION INPUT
 # ==============================================================
 
 def make_classification_input(
@@ -1312,6 +1280,10 @@ def make_classification_input(
     )
 
 
+# ==============================================================
+# CLASSIFICATION TAB
+# ==============================================================
+
 with tab_classify:
 
     st.subheader(
@@ -1322,9 +1294,9 @@ with tab_classify:
         "Given an attraction and trip timing, estimate the likely visit mode."
     )
 
-    col_a, col_b = st.columns(2)
+    colA, colB = st.columns(2)
 
-    with col_a:
+    with colA:
 
         attraction_name2 = st.selectbox(
             "Attraction",
@@ -1338,35 +1310,34 @@ with tab_classify:
 
         attr_row2 = (
             df[
-                df["Attraction"]
-                .astype(str)
+                df["Attraction"].astype(str)
                 == attraction_name2
             ]
             .iloc[0]
         )
 
-    with col_b:
+    with colB:
 
-        year_min2 = int(
+        min_year2 = int(
             df["VisitYear"].min()
         )
 
-        year_max2 = int(
+        max_year2 = int(
             df["VisitYear"].max()
         )
 
         default_year2 = min(
             max(
                 2022,
-                year_min2,
+                min_year2,
             ),
-            year_max2,
+            max_year2,
         )
 
         year2 = st.slider(
             "Visit Year",
-            year_min2,
-            year_max2,
+            min_year2,
+            max_year2,
             default_year2,
             key="clf_year",
         )
@@ -1397,7 +1368,7 @@ with tab_classify:
                 fill_value=0,
             )
 
-            pred_encoded = int(
+            prediction_encoded = int(
                 np.asarray(
                     clf_model.predict(X)
                 )[0]
@@ -1410,17 +1381,13 @@ with tab_classify:
             prediction_label = (
                 visit_encoder
                 .inverse_transform(
-                    [pred_encoded]
+                    [prediction_encoded]
                 )[0]
             )
 
             st.success(
                 f"Predicted visit mode: **{prediction_label}**"
             )
-
-            # --------------------------------------------------
-            # Probabilities
-            # --------------------------------------------------
 
             if hasattr(
                 clf_model,
@@ -1434,46 +1401,37 @@ with tab_classify:
                     )[0]
                 )
 
-                model_classes = np.asarray(
+                classes = np.asarray(
                     clf_model.classes_,
                     dtype=int,
                 )
 
-                valid_positions = []
-                valid_classes = []
+                labels = []
+
+                valid_probabilities = []
 
                 for index, class_id in enumerate(
-                    model_classes
+                    classes
                 ):
 
                     if (
                         0
-                        <= int(class_id)
+                        <= class_id
                         < len(
                             visit_encoder.classes_
                         )
                     ):
 
-                        valid_positions.append(
-                            index
+                        labels.append(
+                            visit_encoder
+                            .classes_[
+                                class_id
+                            ]
                         )
 
-                        valid_classes.append(
-                            int(class_id)
+                        valid_probabilities.append(
+                            probabilities[index]
                         )
-
-                labels = (
-                    visit_encoder
-                    .inverse_transform(
-                        valid_classes
-                    )
-                )
-
-                valid_probabilities = (
-                    probabilities[
-                        valid_positions
-                    ]
-                )
 
                 probability_df = pd.DataFrame(
                     {
@@ -1516,7 +1474,7 @@ with tab_classify:
 
 
 # ==============================================================
-# RECOMMENDATIONS
+# RECOMMENDATION TAB
 # ==============================================================
 
 with tab_recommend:
@@ -1533,9 +1491,9 @@ with tab_recommend:
         ],
     )
 
-    # ----------------------------------------------------------
-    # COLLABORATIVE / USER
-    # ----------------------------------------------------------
+    # ==========================================================
+    # EXISTING USER
+    # ==========================================================
 
     if recommendation_type.startswith(
         "By existing"
@@ -1544,7 +1502,7 @@ with tab_recommend:
         if "UserId" not in df.columns:
 
             st.warning(
-                "UserId is not available in the processed dataset."
+                "UserId is not available in the dataset."
             )
 
             st.dataframe(
@@ -1592,17 +1550,15 @@ with tab_recommend:
                     user_id
                 )
 
-                # --------------------------------------------------
+                # ------------------------------------------------
                 # Unknown user
-                # --------------------------------------------------
+                # ------------------------------------------------
 
                 if user_id not in known_users:
 
                     st.warning(
-                        """
-                        No history was found for this User ID.
-                        Showing popular attractions instead.
-                        """
+                        "No history found for this User ID. "
+                        "Showing popular attractions instead."
                     )
 
                     st.dataframe(
@@ -1617,9 +1573,9 @@ with tab_recommend:
                         hide_index=True,
                     )
 
-                # --------------------------------------------------
+                # ------------------------------------------------
                 # Known user
-                # --------------------------------------------------
+                # ------------------------------------------------
 
                 else:
 
@@ -1629,12 +1585,13 @@ with tab_recommend:
                         == user_id
                     ]
 
-                    seen_attractions = set(
+                    seen_ids = set(
                         user_history[
                             "AttractionId"
                         ]
                         .dropna()
                         .astype(int)
+                        .unique()
                     )
 
                     candidates = (
@@ -1656,12 +1613,10 @@ with tab_recommend:
                             "AttractionId"
                         ]
                         .isin(
-                            seen_attractions
+                            seen_ids
                         )
                     ]
 
-                    # If everything has already
-                    # been visited, show popular ones.
                     if candidates.empty:
 
                         candidates = (
@@ -1669,9 +1624,7 @@ with tab_recommend:
                             .copy()
                         )
 
-                    candidates[
-                        "Score"
-                    ] = (
+                    candidates["Score"] = (
                         candidates[
                             "AvgRating"
                         ].fillna(0)
@@ -1706,9 +1659,9 @@ with tab_recommend:
                         hide_index=True,
                     )
 
-    # ----------------------------------------------------------
+    # ==========================================================
     # CONTENT BASED
-    # ----------------------------------------------------------
+    # ==========================================================
 
     else:
 
@@ -1734,20 +1687,18 @@ with tab_recommend:
 
             try:
 
-                matches = (
+                matching_rows = (
                     recommendation_items[
                         recommendation_items[
                             "Attraction"
-                        ]
-                        .astype(str)
-                        ==
-                        str(
+                        ].astype(str)
+                        == str(
                             selected_attraction
                         )
                     ]
                 )
 
-                if matches.empty:
+                if matching_rows.empty:
 
                     st.warning(
                         "Attraction not found."
@@ -1756,12 +1707,12 @@ with tab_recommend:
                 else:
 
                     attraction_id = int(
-                        matches[
+                        matching_rows[
                             "AttractionId"
                         ].iloc[0]
                     )
 
-                    attraction_ids = (
+                    all_ids = (
                         recommendation_items[
                             "AttractionId"
                         ]
@@ -1769,11 +1720,8 @@ with tab_recommend:
                         .tolist()
                     )
 
-                    index = (
-                        attraction_ids
-                        .index(
-                            attraction_id
-                        )
+                    index = all_ids.index(
+                        attraction_id
                     )
 
                     similarities = (
@@ -1783,7 +1731,6 @@ with tab_recommend:
                         .copy()
                     )
 
-                    # Exclude itself.
                     similarities[index] = -np.inf
 
                     top_indices = (
@@ -1825,9 +1772,7 @@ with tab_recommend:
 st.divider()
 
 st.caption(
-    """
-    Waypoint · Tourism Experience Analytics
-    — data cleaning → EDA → regression /
-    classification / recommendation → Streamlit
-    """
+    "Waypoint · Tourism Experience Analytics "
+    "— data cleaning → EDA → regression / "
+    "classification / recommendation → Streamlit"
 )
