@@ -1,11 +1,6 @@
 """
 Tourism Experience Analytics — Streamlit App
 Run with: streamlit run app.py
-
-NOTE: This app trains its models fresh on every deployment (cached after first
-load) rather than loading pre-saved .joblib files. This avoids scikit-learn /
-lightgbm pickle version-compatibility errors across different environments
-(local machine vs. Streamlit Cloud), at the cost of a few seconds' startup time.
 """
 import streamlit as st
 import pandas as pd
